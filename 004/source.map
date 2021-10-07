@@ -1,0 +1,44 @@
+MPLINK 4.49, Linker
+Linker Map File - Created Wed Oct 06 22:30:56 2021
+
+                                 Section Info
+                  Section       Type    Address   Location Size(Bytes)
+                ---------  ---------  ---------  ---------  ---------
+                   .org_0       code   0x000000    program   0x000000
+                   .org_1       code   0x000000    program   0x000002
+                   .org_2       code   0x000004    program   0x00003a
+    .config_2007_SOURCE.O       code   0x002007    program   0x000002
+
+
+
+                              Program Memory Usage 
+                               Start         End      
+                           ---------   ---------      
+                            0x000000    0x000000      
+                            0x000004    0x000020      
+                            0x002007    0x002007      
+            31 out of 1094 program addresses used, program memory utilization is 2%
+
+
+
+                              Symbols - Sorted by Name
+                     Name    Address   Location    Storage File                     
+                ---------  ---------  ---------  --------- ---------                
+                  cmd_vrf   0x00000b    program     static Z:\home\guilherme\Programming\assembly-curso\004\source.asm
+                     loop   0x00001f    program     static Z:\home\guilherme\Programming\assembly-curso\004\source.asm
+                     main   0x000013    program     static Z:\home\guilherme\Programming\assembly-curso\004\source.asm
+                  run_rst   0x000008    program     static Z:\home\guilherme\Programming\assembly-curso\004\source.asm
+                  run_snd   0x000005    program     static Z:\home\guilherme\Programming\assembly-curso\004\source.asm
+
+
+
+                              Symbols - Sorted by Address
+                     Name    Address   Location    Storage File                     
+                ---------  ---------  ---------  --------- ---------                
+                  run_snd   0x000005    program     static Z:\home\guilherme\Programming\assembly-curso\004\source.asm
+                  run_rst   0x000008    program     static Z:\home\guilherme\Programming\assembly-curso\004\source.asm
+                  cmd_vrf   0x00000b    program     static Z:\home\guilherme\Programming\assembly-curso\004\source.asm
+                     main   0x000013    program     static Z:\home\guilherme\Programming\assembly-curso\004\source.asm
+                     loop   0x00001f    program     static Z:\home\guilherme\Programming\assembly-curso\004\source.asm
+
+

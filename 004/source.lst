@@ -1,0 +1,428 @@
+MPASM  5.51                        SOURCE.ASM   10-6-2021  22:30:53         PAGE  1
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00001 ; ====================================================
+                      00002 ;
+                      00003 ; MCU: PIC16F84A
+                      00004 ; CLOCK: 4MHz
+                      00005 ;
+                      00006 ; Author: https://github.com/Guilherme-De-Marchi
+                      00007 ; Date: 10-21
+                      00008 ;
+                      00009 ; ====================================================
+                      00010 ;
+                      00011 ;
+                      00012 ; ---------------- Circuit commands ------------------ 
+                      00013 ;
+                      00014 ; This PIC will be part of a circuit that will receive
+                      00015 ; commands via usb, and will have the function of
+                      00016 ; interpreting a sequence of 6 bits and sending to an
+                      00017 ; 8 bits multiplexer the direction equivalent to the
+                      00018 ; received command.
+                      00019 ;
+                      00020 ; - - - - - - - - - Commands list - - - - - - - - - - 
+                      00021 ;
+                      00022 ; Command:Send  B'1111111' 
+                      00023 ; Output:               B'000'
+                      00024 ; Description:  Releases the coordinate register bus
+                      00025 ;
+                      00026 ; Command:Reset B'0000000'
+                      00027 ; Output:               B'001'
+                      00028 ; Description:  Clear all Monitor memory and
+                      00029 ;                               registers
+                      00030 ;
+                      00031 ; Command:?             B'1000000'
+                      00032 ; Output:               B'010'
+                      00033 ; Description:  Not implemented yet
+                      00034 ;
+                      00035 ; Command:?             B'0111111'
+                      00036 ; Output:               B'011'
+                      00037 ; Description:  Not implemented yet
+                      00038 ;
+                      00039 ; - - - - - - - I/O Configuration - - - - - - - - - -
+                      00040 ;
+                      00041 ; PORTA [RA0~RA2] -> Command Multiplexer Output
+                      00042 ;
+                      00043 ; PORTB [RBO~RB6] -> Command input
+                      00044 ; +-----[RBO~RB5] -> Index of coordinate
+                      00045 ; +---------[RB6] -> Direction of coordinate
+                      00046 ;
+                      00047 ; ---------------------------------------------------
+                      00048 
+                      00049 
+                      00050         list            p=16f84a                                                                        
+                            ; PIC16F84A
+                      00051 
+                      00052 
+MPASM  5.51                        SOURCE.ASM   10-6-2021  22:30:53         PAGE  2
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00053 ; --- Includes ---
+                      00054 
+                      00055 #include        <p16f84a.inc>
+                      00001         LIST
+                      00002 
+                      00003 ;==========================================================================
+                      00004 ;  MPASM PIC16F84A processor include
+                      00005 ; 
+                      00006 ;  (c) Copyright 1999-2013 Microchip Technology, All rights reserved
+                      00007 ;==========================================================================
+                      00008 
+                      00208         LIST
+                      00056 
+                      00057 
+                      00058 ; --- FUSE bits ---
+                      00059 
+2007   3FF1           00060         __config        _XT_OSC & _WDT_OFF & _PWRTE_ON & _CP_OFF
+                      00061 
+                      00062 
+                      00063 ; --- Memory pagination ---
+                      00064 
+                      00065 #define bank0   bcf     STATUS,RP0                                      ; Instruction -> Switch for Mem.
+                             Bank 0
+                      00066 #define bank1   bsf     STATUS,RP0                                      ; Instruction -> Switch for Mem.
+                             Bank 1
+                      00067 
+                      00068 
+                      00069 ; --- General purpose registers ---
+                      00070 
+                      00071         cblock  H'0C'
+                      00072 
+                      00073         ; - - Commands GPR - -
+                      00074         ; See "Commands list" on this code header for more information
+                      00075         
+  0000000C            00076         SND_CMD                                                                                 ; Send c
+                            ommand
+  0000000D            00077         SND_OUT                                                                                 ; Send o
+                            utput
+                      00078         
+  0000000E            00079         RST_CMD                                                                                 ; Reset 
+                            command
+  0000000F            00080         RST_OUT                                                                                 ; Reset 
+                            output
+                      00081         
+                      00082         ; - - Normal GPR - -
+                      00083 
+                      00084 ; * NOT USED *
+                      00085 ;       COORDR                                                                                  ; Row co
+                            ordinate
+                      00086 ;       COORDC                                                                                  ; Column
+                             coordinate
+                      00087 ; * NOT USED *
+                      00088 
+MPASM  5.51                        SOURCE.ASM   10-6-2021  22:30:53         PAGE  3
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00089         endc
+                      00090 
+                      00091 
+                      00092 ; --- RESET vector ---
+                      00093 
+0000                  00094         org             H'0000'
+0000   2813           00095         goto    main
+                      00096 
+                      00097 
+                      00098 ; --- INTERRUPTION vector ---
+                      00099 
+0004                  00100         org             H'0004'
+0004   0009           00101         retfie
+                      00102         
+                      00103 
+                      00104 ; --- Execute send command . label ---
+                      00105         
+0005                  00106 run_snd:
+                      00107 
+0005   080D           00108         movf    SND_OUT,W                                                       ; W = SND_OUT
+0006   0085           00109         movwf   PORTA                                                           ; PORTA = SND_OUT
+0007   0008           00110         return
+                      00111                 
+                      00112                 
+                      00113 ; --- Execute reset command . label ---
+                      00114 
+0008                  00115 run_rst:
+                      00116 
+0008   080F           00117         movf    RST_OUT,W                                                       ; W = RST_OUT
+0009   0085           00118         movwf   PORTA                                                           ; PORTA = RST_OUT
+000A   0008           00119         return
+                      00120 
+                      00121 
+                      00122 ; * NOT USED *
+                      00123 ; ### Coordinate register . label group ###
+                      00124 ;
+                      00125 ;  #  Register row coordinate  #
+                      00126 ;
+                      00127 ;reg_r_coord:
+                      00128 ;
+                      00129 ;                                                                                               ; PORTB[
+                            RB0~RB5] represents a row coordinate
+                      00130 ;       movf    PORTB,W                                                         ; W = PORTB
+                      00131 ;       movwf   COORDR                                                          ; COORDR = PORTB
+                      00132 ;       return
+                      00133 ;
+                      00134 ;
+                      00135 ;  #  Register column coordinate  #
+                      00136 ;
+                      00137 ;reg_c_coord:
+                      00138 ;
+                      00139 ;                                                                                               ; PORTB[
+                            RB0~RB5] represents a column coordinate
+MPASM  5.51                        SOURCE.ASM   10-6-2021  22:30:53         PAGE  4
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00140 ;       movf    PORTB,W                                                         ; W = PORTB
+                      00141 ;       movwf   COORDC                                                          ; COORDC = PORTB
+                      00142 ;       return
+                      00143 ;       
+                      00144 ;       
+                      00145 ;  #  Coordinate direction verification  #
+                      00146 ;
+                      00147 ;reg_coord:
+                      00148 ;
+                      00149 ;       btfss   PORTB,RB6                                                       ; PORTB[RB6] = 0?
+                      00150 ;       goto    reg_r_coord                                                     ; YES
+                      00151 ;       goto    reg_c_coord                                                     ; NO
+                      00152 ; * NOT USED *
+                      00153         
+                      00154 ; --- Command verification . label ---
+                      00155 
+000B                  00156 cmd_vrf:
+                      00157         
+                      00158         ; If PORTB equals to <command_image>, STATUS[Z] = 1
+                      00159         
+000B   080C           00160         movfw   SND_CMD                                                         ; W = SND_CMD
+000C   0606           00161         xorwf   PORTB,W                                                         ; W = PORTB XOR W
+000D   1903           00162         btfsc   STATUS,Z                                                                ; STATUS[Z] = 1?
+000E   2805           00163         goto    run_snd                                                         ; YES
+                      00164         
+000F   080E           00165         movfw   RST_CMD                                                         ; W = RST_CMD
+0010   0606           00166         xorwf   PORTB,W                                                         ; W = PORTB XOR W
+0011   1903           00167         btfsc   STATUS,Z                                                                ; STATUS[Z] = 1?
+0012   2808           00168         goto    run_rst                                                         ; YES           
+                      00169 
+                      00170 ; * NOT USED *  
+                      00171 ;       ; If PORTB is not a valid command:
+                      00172 ;                               
+                      00173 ;       goto    reg_coord
+                      00174 ; * NOT USED *
+                      00175 
+                      00176 
+                      00177 ; --- Main . label ---
+                      00178 
+0013                  00179 main:
+                      00180 
+                      00181         ; - - Initializing general purpose registers - -
+                      00182         
+                      00183         ;  -  Initializing commands GPR  -  
+                      00184                                                                                                 ; See "C
+                            ommands list" on this code header for more information
+0013   307F           00185         movlw   H'7F'                                                           ; B'01111111' = Send com
+                            mand image
+0014   008C           00186         movwf   SND_CMD                                                         ; Initialize Send comman
+                            d image
+0015   3000           00187         movlw   H'00'                                                           ; B'00000000' = Send com
+                            mand output
+0016   008D           00188         movwf   SND_OUT                                                         ; Initialize Send comman
+MPASM  5.51                        SOURCE.ASM   10-6-2021  22:30:53         PAGE  5
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                            d output
+                      00189         
+0017   3000           00190         movlw   H'00'                                                           ; B'00000000' = Reset co
+                            mmand image
+0018   008E           00191         movwf   RST_CMD                                                         ; Initialize Reset comma
+                            nd image
+0019   3001           00192         movlw   H'01'                                                           ; B'00000001' = Reset co
+                            mmand output
+001A   008F           00193         movwf   RST_OUT                                                         ; Initialize Reset comma
+                            nd output
+                      00194         
+                      00195         ; - - Setting I/O pins - -
+                      00196         ; See "I/O configuration" for more information
+                      00197         
+001B   1683           00198         bank1                                                                           ; Access memory 
+                            bank 1
+                      00199         
+001C   30F8           00200         movlw   H'F8'                                                           ; B'11111000'
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+001D   0085           00201         movwf   TRISA                                                           ; TRISA[RA0~RA2] -> Outp
+                            ut
+                      00202                                                                                                 ; TRISB[
+                            RB0~RB6] -> Input by default
+                      00203         
+001E   1283           00204         bank0                                                                           ; Back to memory
+                             bank 0
+                      00205         
+                      00206         
+                      00207 ; --- Infinite Loop . label --- 
+                      00208 
+001F                  00209 loop:
+                      00210         
+001F   200B           00211         call cmd_vrf                                                                    ; Call command_v
+                            erification label as a sub-routine 
+                      00212         
+0020   281F           00213         goto loop                                                                       ; Make this labe
+                            l dont stop executing
+                      00214         
+                      00215         end                                                                                     ; End of
+                             main label
+MPASM  5.51                        SOURCE.ASM   10-6-2021  22:30:53         PAGE  6
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+C                                 00000000
+DC                                00000001
+EEADR                             00000009
+EECON1                            00000088
+EECON2                            00000089
+EEDATA                            00000008
+EEIE                              00000006
+EEIF                              00000004
+F                                 00000001
+FSR                               00000004
+GIE                               00000007
+INDF                              00000000
+INTCON                            0000000B
+INTE                              00000004
+INTEDG                            00000006
+INTF                              00000001
+IRP                               00000007
+NOT_PD                            00000003
+NOT_RBPU                          00000007
+NOT_TO                            00000004
+OPTION_REG                        00000081
+PCL                               00000002
+PCLATH                            0000000A
+PORTA                             00000005
+PORTB                             00000006
+PS0                               00000000
+PS1                               00000001
+PS2                               00000002
+PSA                               00000003
+RA0                               00000000
+RA1                               00000001
+RA2                               00000002
+RA3                               00000003
+RA4                               00000004
+RB0                               00000000
+RB1                               00000001
+RB2                               00000002
+RB3                               00000003
+RB4                               00000004
+RB5                               00000005
+RB6                               00000006
+RB7                               00000007
+RBIE                              00000003
+RBIF                              00000000
+RD                                00000000
+RP0                               00000005
+RP1                               00000006
+RST_CMD                           0000000E
+RST_OUT                           0000000F
+SND_CMD                           0000000C
+SND_OUT                           0000000D
+STATUS                            00000003
+T0CS                              00000005
+MPASM  5.51                        SOURCE.ASM   10-6-2021  22:30:53         PAGE  7
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+T0IE                              00000005
+T0IF                              00000002
+T0SE                              00000004
+TMR0                              00000001
+TMR0IE                            00000005
+TMR0IF                            00000002
+TRISA                             00000085
+TRISA0                            00000000
+TRISA1                            00000001
+TRISA2                            00000002
+TRISA3                            00000003
+TRISA4                            00000004
+TRISB                             00000086
+TRISB0                            00000000
+TRISB1                            00000001
+TRISB2                            00000002
+TRISB3                            00000003
+TRISB4                            00000004
+TRISB5                            00000005
+TRISB6                            00000006
+TRISB7                            00000007
+W                                 00000000
+WR                                00000001
+WREN                              00000002
+WRERR                             00000003
+Z                                 00000002
+_CONFIG                           00002007
+_CP_OFF                           00003FFF
+_CP_ON                            0000000F
+_DEVID1                           00002006
+_FOSC_EXTRC                       00003FFF
+_FOSC_HS                          00003FFE
+_FOSC_LP                          00003FFC
+_FOSC_XT                          00003FFD
+_HS_OSC                           00003FFE
+_IDLOC0                           00002000
+_IDLOC1                           00002001
+_IDLOC2                           00002002
+_IDLOC3                           00002003
+_LP_OSC                           00003FFC
+_PWRTE_OFF                        00003FFF
+_PWRTE_ON                         00003FF7
+_RC_OSC                           00003FFF
+_WDTE_OFF                         00003FFB
+_WDTE_ON                          00003FFF
+_WDT_OFF                          00003FFB
+_WDT_ON                           00003FFF
+_XT_OSC                           00003FFD
+__16F84A                          00000001
+__DEBUG                           1
+bank0                             bcf     STATUS,RP0
+bank1                             bsf     STATUS,RP0
+cmd_vrf                           0000000B
+MPASM  5.51                        SOURCE.ASM   10-6-2021  22:30:53         PAGE  8
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+loop                              0000001F
+main                              00000013
+run_rst                           00000008
+run_snd                           00000005
+
+
+MEMORY USAGE MAP ('X' = Used,  '-' = Unused)
+
+0000 : X---XXXXXXXXXXXX XXXXXXXXXXXXXXXX X--------------- ----------------
+2000 : -------X-------- ---------------- ---------------- ----------------
+
+All other memory blocks unused.
+
+Program Memory Words Used:    30
+Program Memory Words Free:   994
+
+
+Errors   :     0
+Warnings :     0 reported,     0 suppressed
+Messages :     1 reported,     0 suppressed
+
+

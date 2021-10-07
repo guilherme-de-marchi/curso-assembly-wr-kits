@@ -1,0 +1,42 @@
+MPLINK 4.49, Linker
+Linker Map File - Created Mon Oct 04 17:54:59 2021
+
+                                 Section Info
+                  Section       Type    Address   Location Size(Bytes)
+                ---------  ---------  ---------  ---------  ---------
+                   .org_0       code   0x000000    program   0x000000
+                   .org_1       code   0x000000    program   0x000002
+                   .org_2       code   0x000004    program   0x00001e
+    .config_2007_SOURCE.O       code   0x002007    program   0x000002
+
+
+
+                              Program Memory Usage 
+                               Start         End      
+                           ---------   ---------      
+                            0x000000    0x000000      
+                            0x000004    0x000012      
+                            0x002007    0x002007      
+            17 out of 1094 program addresses used, program memory utilization is 1%
+
+
+
+                              Symbols - Sorted by Name
+                     Name    Address   Location    Storage File                     
+                ---------  ---------  ---------  --------- ---------                
+              led1_invert   0x000009    program     static Z:\home\guilherme\Programming\assembly-curso\003\source.asm
+                 led1_off   0x000007    program     static Z:\home\guilherme\Programming\assembly-curso\003\source.asm
+                  led1_on   0x000005    program     static Z:\home\guilherme\Programming\assembly-curso\003\source.asm
+                     main   0x00000c    program     static Z:\home\guilherme\Programming\assembly-curso\003\source.asm
+
+
+
+                              Symbols - Sorted by Address
+                     Name    Address   Location    Storage File                     
+                ---------  ---------  ---------  --------- ---------                
+                  led1_on   0x000005    program     static Z:\home\guilherme\Programming\assembly-curso\003\source.asm
+                 led1_off   0x000007    program     static Z:\home\guilherme\Programming\assembly-curso\003\source.asm
+              led1_invert   0x000009    program     static Z:\home\guilherme\Programming\assembly-curso\003\source.asm
+                     main   0x00000c    program     static Z:\home\guilherme\Programming\assembly-curso\003\source.asm
+
+

@@ -1,0 +1,261 @@
+MPASM  5.51                        SOURCE.ASM   10-4-2021  17:54:54         PAGE  1
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00001 ; ===============================================================
+                      00002 ;
+                      00003 ; Curso de Assembly para Microcontroladores PIC 003
+                      00004 ;
+                      00005 ; MCU: PIC16F84A        Clock: 4MHz
+                      00006 ;
+                      00007 ; Btn1 -> Ativo em HIGH
+                      00008 ; Led1 -> Ativo em HIGH
+                      00009 ;
+                      00010 ; Autor: https://github.com/Guilherme-De-Marchi
+                      00011 ; Data: 10-21
+                      00012 ;
+                      00013 ; ===============================================================
+                      00014 
+                      00015 
+                      00016   list  p=16f84a                                                                        ; PIC16F84A
+                      00017   
+                      00018   
+                      00019 ; --- Includes ---
+                      00020 
+                      00021   #include  <p16f84a.inc>                                                       ; Constantes da placa
+                      00001         LIST
+                      00002 
+                      00003 ;==========================================================================
+                      00004 ;  MPASM PIC16F84A processor include
+                      00005 ; 
+                      00006 ;  (c) Copyright 1999-2013 Microchip Technology, All rights reserved
+                      00007 ;==========================================================================
+                      00008 
+                      00208         LIST
+                      00022   
+                      00023   
+                      00024 ; --- FUSE bits ---
+                      00025 
+2007   3FF1           00026   __config  _XT_OSC & _WDT_OFF & _PWRTE_ON & _CP_OFF    ; Configuracoes dos fuse bits
+                      00027   
+                      00028   
+                      00029 ; --- Paginacao de memoria ---
+                      00030 
+                      00031   #define  bank0                bcf  STATUS,RP0                         ; Instrucao para selecionar o ba
+                            nco 0
+                      00032   #define  bank1                bsf  STATUS,RP0                         ; Instrucao para selecionar o ba
+                            nco 1
+                      00033   
+                      00034   
+                      00035 ; --- I/O ---
+                      00036 
+                      00037   #define  btn1         PORTA,RA0                                       ; Instrucao para acessar o pino 
+                            RA0
+                      00038   #define  led1         PORTB,RB0                                       ; Instrucao para acessar o pino 
+                            RB0
+                      00039   
+                      00040   
+MPASM  5.51                        SOURCE.ASM   10-4-2021  17:54:54         PAGE  2
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00041 ; --- RESET vector ---
+                      00042 
+0000                  00043   org   H'0000'
+0000   280C           00044   goto  main                                                                            ; Label principa
+                            l
+                      00045   
+                      00046   
+                      00047 ; --- INTERRUPTION vector ---
+                      00048 
+0004                  00049   org   H'0004'
+0004   0009           00050   retfie
+                      00051  
+                      00052  
+                      00053 ; --- Led1_on label ---
+                      00054 
+0005                  00055 led1_on:
+                      00056    
+0005   1406           00057    bsf   led1                                                                           ; Led1 -> HIGH
+0006   280C           00058    goto  main
+                      00059     
+                      00060      
+                      00061 ; --- Led1_off label ---
+                      00062 
+0007                  00063 led1_off:
+                      00064    
+0007   1006           00065    bcf  led1                                                                            ; Led1 -> LOW
+0008   280C           00066    goto main
+                      00067    
+                      00068    
+                      00069 ; --- Led1_invert label ---
+                      00070 
+0009                  00071 led1_invert:
+                      00072   
+0009   1C06           00073    btfss  led1                                                                  ; Led1 == 1?
+000A   2805           00074    goto   led1_on                                                                       ; Nao
+000B   2807           00075    goto   led1_off                                                              ; Sim
+                      00076     
+                      00077        
+                      00078 ; --- MAIN label ---
+                      00079 
+000C                  00080 main:
+                      00081   
+000C   1683           00082    bank1
+000D   30FE           00083    movlw  H'FE'
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+000E   0086           00084    movwf  TRISB                                                                 ; PORTB RB0 -> Output
+000F   1283           00085    bank0
+                      00086    
+0010   1C05           00087    btfss  btn1                                                                  ; Btn1 = 1?
+0011   280C           00088    goto   main                                                                  ; Nao
+0012   2809           00089    goto   led1_invert                                                           ; Sim
+                      00090    
+                      00091    end
+MPASM  5.51                        SOURCE.ASM   10-4-2021  17:54:54         PAGE  3
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+C                                 00000000
+DC                                00000001
+EEADR                             00000009
+EECON1                            00000088
+EECON2                            00000089
+EEDATA                            00000008
+EEIE                              00000006
+EEIF                              00000004
+F                                 00000001
+FSR                               00000004
+GIE                               00000007
+INDF                              00000000
+INTCON                            0000000B
+INTE                              00000004
+INTEDG                            00000006
+INTF                              00000001
+IRP                               00000007
+NOT_PD                            00000003
+NOT_RBPU                          00000007
+NOT_TO                            00000004
+OPTION_REG                        00000081
+PCL                               00000002
+PCLATH                            0000000A
+PORTA                             00000005
+PORTB                             00000006
+PS0                               00000000
+PS1                               00000001
+PS2                               00000002
+PSA                               00000003
+RA0                               00000000
+RA1                               00000001
+RA2                               00000002
+RA3                               00000003
+RA4                               00000004
+RB0                               00000000
+RB1                               00000001
+RB2                               00000002
+RB3                               00000003
+RB4                               00000004
+RB5                               00000005
+RB6                               00000006
+RB7                               00000007
+RBIE                              00000003
+RBIF                              00000000
+RD                                00000000
+RP0                               00000005
+RP1                               00000006
+STATUS                            00000003
+T0CS                              00000005
+T0IE                              00000005
+T0IF                              00000002
+T0SE                              00000004
+TMR0                              00000001
+MPASM  5.51                        SOURCE.ASM   10-4-2021  17:54:54         PAGE  4
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+TMR0IE                            00000005
+TMR0IF                            00000002
+TRISA                             00000085
+TRISA0                            00000000
+TRISA1                            00000001
+TRISA2                            00000002
+TRISA3                            00000003
+TRISA4                            00000004
+TRISB                             00000086
+TRISB0                            00000000
+TRISB1                            00000001
+TRISB2                            00000002
+TRISB3                            00000003
+TRISB4                            00000004
+TRISB5                            00000005
+TRISB6                            00000006
+TRISB7                            00000007
+W                                 00000000
+WR                                00000001
+WREN                              00000002
+WRERR                             00000003
+Z                                 00000002
+_CONFIG                           00002007
+_CP_OFF                           00003FFF
+_CP_ON                            0000000F
+_DEVID1                           00002006
+_FOSC_EXTRC                       00003FFF
+_FOSC_HS                          00003FFE
+_FOSC_LP                          00003FFC
+_FOSC_XT                          00003FFD
+_HS_OSC                           00003FFE
+_IDLOC0                           00002000
+_IDLOC1                           00002001
+_IDLOC2                           00002002
+_IDLOC3                           00002003
+_LP_OSC                           00003FFC
+_PWRTE_OFF                        00003FFF
+_PWRTE_ON                         00003FF7
+_RC_OSC                           00003FFF
+_WDTE_OFF                         00003FFB
+_WDTE_ON                          00003FFF
+_WDT_OFF                          00003FFB
+_WDT_ON                           00003FFF
+_XT_OSC                           00003FFD
+__16F84A                          00000001
+__DEBUG                           1
+bank0                             bcf  STATUS,RP0
+bank1                             bsf  STATUS,RP0
+btn1                              PORTA,RA0
+led1                              PORTB,RB0
+led1_invert                       00000009
+led1_off                          00000007
+led1_on                           00000005
+MPASM  5.51                        SOURCE.ASM   10-4-2021  17:54:54         PAGE  5
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+main                              0000000C
+
+
+MEMORY USAGE MAP ('X' = Used,  '-' = Unused)
+
+0000 : X---XXXXXXXXXXXX XXX------------- ---------------- ----------------
+2000 : -------X-------- ---------------- ---------------- ----------------
+
+All other memory blocks unused.
+
+Program Memory Words Used:    16
+Program Memory Words Free:  1008
+
+
+Errors   :     0
+Warnings :     0 reported,     0 suppressed
+Messages :     1 reported,     0 suppressed
+
+
